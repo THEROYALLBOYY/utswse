@@ -1,0 +1,366 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "SIMADU API",
+    "description": "REST API untuk Sistem Layanan Informasi dan Pengaduan Mahasiswa (UTS Web Service Engineering 2026)",
+    "version": "1.0.0",
+    "contact": {
+      "name": "SIMADU",
+      "url": "http://localhost:3000/docs"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:3000",
+      "description": "Server lokal"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Autentikasi",
+      "description": "Login dan logout"
+    },
+    {
+      "name": "Pengaduan",
+      "description": "CRUD pengaduan mahasiswa"
+    }
+  ],
+  "paths": {
+    "/api/auth/login": {
+      "post": {
+        "tags": [
+          "Autentikasi"
+        ],
+        "summary": "Login dan dapatkan Bearer Token",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "username",
+                  "password"
+                ],
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "example": "mhs001"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "MhsDemo123!"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login berhasil"
+          },
+          "400": {
+            "description": "Validasi gagal"
+          },
+          "401": {
+            "description": "Kredensial salah"
+          }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "tags": [
+          "Autentikasi"
+        ],
+        "summary": "Logout (mencabut token)",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Logout berhasil"
+          },
+          "401": {
+            "description": "Token tidak valid"
+          }
+        }
+      }
+    },
+    "/api/pengaduan": {
+      "get": {
+        "tags": [
+          "Pengaduan"
+        ],
+        "summary": "Lihat daftar pengaduan (mahasiswa: miliknya, admin: semua)",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar pengaduan"
+          },
+          "401": {
+            "description": "Token wajib"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Pengaduan"
+        ],
+        "summary": "Buat pengaduan baru (mahasiswa)",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "judul",
+                  "kategori",
+                  "deskripsi"
+                ],
+                "properties": {
+                  "judul": {
+                    "type": "string",
+                    "example": "Proyektor ruang kelas rusak"
+                  },
+                  "kategori": {
+                    "type": "string",
+                    "enum": [
+                      "Fasilitas",
+                      "Akademik",
+                      "TI"
+                    ],
+                    "example": "Fasilitas"
+                  },
+                  "deskripsi": {
+                    "type": "string",
+                    "example": "Proyektor di ruang kelas tidak dapat menyala."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Pengaduan dibuat"
+          },
+          "400": {
+            "description": "Validasi gagal"
+          },
+          "403": {
+            "description": "Admin tidak boleh membuat"
+          }
+        }
+      }
+    },
+    "/api/pengaduan/{id}": {
+      "get": {
+        "tags": [
+          "Pengaduan"
+        ],
+        "summary": "Detail pengaduan",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detail pengaduan"
+          },
+          "403": {
+            "description": "Bukan pemilik"
+          },
+          "404": {
+            "description": "Tidak ditemukan"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Pengaduan"
+        ],
+        "summary": "Ubah pengaduan (pemilik, status diajukan)",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "judul": {
+                    "type": "string"
+                  },
+                  "kategori": {
+                    "type": "string",
+                    "enum": [
+                      "Fasilitas",
+                      "Akademik",
+                      "TI"
+                    ]
+                  },
+                  "deskripsi": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Diubah"
+          },
+          "403": {
+            "description": "Ditolak"
+          },
+          "409": {
+            "description": "Status bukan diajukan"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Pengaduan"
+        ],
+        "summary": "Hapus pengaduan (pemilik, status diajukan)",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Dihapus"
+          },
+          "403": {
+            "description": "Ditolak"
+          },
+          "409": {
+            "description": "Status bukan diajukan"
+          }
+        }
+      }
+    },
+    "/api/pengaduan/{id}/status": {
+      "patch": {
+        "tags": [
+          "Pengaduan"
+        ],
+        "summary": "Ubah status pengaduan (admin)",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "status"
+                ],
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "diajukan",
+                      "diproses",
+                      "selesai"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Status diubah"
+          },
+          "403": {
+            "description": "Bukan admin"
+          },
+          "404": {
+            "description": "Tidak ditemukan"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "hex"
+      }
+    }
+  },
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ]
+}
